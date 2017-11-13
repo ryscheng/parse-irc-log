@@ -28,30 +28,33 @@ function main() {
 
   let parent = process.argv[2];
   let dir = parent;
+  let promises = [];
+  let parser = new ParseIRC("2016");
 
-  let parser = new ParseIRC("2016/12/01");
-  //parser.processFile("/home/ryscheng/Downloads/experiments/irc-ubuntu/2016/12/01/#xubuntu.txt");
-  parser.processDir("/home/ryscheng/Downloads/experiments/irc-ubuntu/2016/12/01/").then(() => {
+  //for (let month = 1; month <= 12; month++) {
+  for (let month = 1; month <= 1; month++) {
+    for (let day = 1; day <= 31; day++) {
+      dir = path.join(parent, doubleDigitStr(month), doubleDigitStr(day));
+      promises.push(Q.nfapply(fs.lstat, [ dir ]).then(function(dir, stats) {
+        if (!stats.isDirectory()) {
+          // Just ignore
+          return Promise.resolve();
+        }
+        return parser.processDir(dir)
+      }.bind({}, dir)).catch((err) => {
+        // File does not exist
+        // console.error(err);
+      }));
+    }
+  }
+
+  Promise.all(promises).then(() => {
     console.log(parser);
     console.log("Finished processing.");
   }).catch((err) => {
     console.error("FATAL");
     console.error(err);
   });
-
-  /**
-  for (let month = 1; month <= 12; month++) {
-    for (let day = 1; day <= 31; day++) {
-      dir = path.join(parent, doubleDigitStr(month), doubleDigitStr(day));
-      Q.nfapply(fs.lstat, [ dir ]).then(function(dir, stats) {
-        if (stats.isDirectory()) {
-          parser.processDir(dir)
-        }
-      }.bind({}, dir));
-    }
-  }
-  **/
-
 
 }
 
