@@ -1,0 +1,23 @@
+{
+  "name": "parse-irc-log",
+  "version": "1.0.0",
+  "description": "Parse IRC logs",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node ./src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ryscheng/parse-irc-log.git"
+  },
+  "author": "Raymond Cheng <me@raymondcheng.net> (https://raymondcheng.net)",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/ryscheng/parse-irc-log/issues"
+  },
+  "homepage": "https://github.com/ryscheng/parse-irc-log#readme",
+  "dependencies": {
+    "q": "^1.5.1"
+  }
+}
