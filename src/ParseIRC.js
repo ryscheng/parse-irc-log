@@ -59,48 +59,92 @@ class ParseIRC {
     if (line.length === 0) {
       // empty line
       return;
-    }
-
-    if (line.substr(0,3) === "===") {
-      //this.processEvt(line);
+    } else if (this.processEvent(line)) {
       return;
-    }
-
-    if (line.indexOf("[") === -1 ||
-       line.indexOf("]") === -1 ||
-       line.indexOf("<") === -1 ||
-       line.indexOf(">") === -1) {
+    } else if (this.processAction(line)) {
+      return;
+    } else if (this.processMsg(line)) {
+      return;
+    } else {
       console.log("Malformed line: " + line);
-      return;
-    } 
-    this.processMsg(line);
+    }
+  }
+  
+  processEvent(line) {
+    if (line.substr(0,3) !== "===") {
+      return false;
+    }
+    // @todo ignoring events
+    //console.log("Event: " + line);
+    return true;
   }
 
-  processAction() {
-  }
-
-  processMsg(line) {
-    let i = line.indexOf("[")+1;
-    let end = line.indexOf("]");
-    let time = line.substring(i, end);
-    i = line.indexOf("<")+1;
-    end = line.indexOf(">");
-    let user = line.substring(i, end);
-    let msg = line.substring(end+2);
-    /**
-    console.log(line);
-    console.log({
+  processAction(line) {
+    if (line.indexOf("[") !== 0 ||
+        line.indexOf("]") !== 6) {
+      return false;
+    }
+    if (line.indexOf("*") !== 9) {
+      return false;
+    }
+    let time = line.substring(1, 6);
+    line = line.substr(line.indexOf("*")+1).trim();
+    let end = line.indexOf(" ");
+    let user = line.substring(0, end);
+    let msg = line.substring(end).trim();
+    this.processParsed({
       time: time,
       user: user,
       message: msg,
     });
-    **/
-    if (this._stats.msgCount.hasOwnProperty(user)) {
-      this._stats.msgCount[user]++;
-    } else {
-      this._stats.msgCount[user] = 1;
-    }
+    return true;
+  }
 
+  processMsg(line) {
+    if (line.indexOf("[") !== 0 ||
+        line.indexOf("]") !== 6) {
+      return false;
+    }
+    if (line.indexOf("<") === -1 ||
+       line.indexOf(">") === -1) {
+      return false
+    }
+    let time = line.substring(1, 6);
+    let i = line.indexOf("<")+1;
+    let end = line.indexOf(">");
+    let user = line.substring(i, end);
+    let msg = line.substring(end+1).trim();
+    this.processParsed({
+      time: time,
+      user: user,
+      message: msg,
+    });
+    return true;
+  }
+
+  processParsed(data) {
+    //console.log(data);
+    if (this._stats.msgCount.hasOwnProperty(data.user)) {
+      this._stats.msgCount[data.user]++;
+    } else {
+      this._stats.msgCount[data.user] = 1;
+    }
+  }
+
+  getFileCount() {
+    return this._stats.fileCount;
+  }
+
+  countTotalMessages() {
+    let result = 0;
+    for (let k in this._stats.msgCount) {
+      result += this._stats.msgCount[k];
+    }
+    return result;
+  }
+
+  countTotalUsers() {
+    return Object.keys(this._stats.msgCount).length;
   }
 
 }

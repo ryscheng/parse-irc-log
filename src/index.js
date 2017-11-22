@@ -31,6 +31,7 @@ function main() {
   let promises = [];
   let parser = new ParseIRC("2016");
 
+  // !!! 
   //for (let month = 1; month <= 12; month++) {
   for (let month = 1; month <= 1; month++) {
     for (let day = 1; day <= 31; day++) {
@@ -49,8 +50,11 @@ function main() {
   }
 
   Promise.all(promises).then(() => {
-    console.log(parser);
+    //console.log(parser);
     console.log("Finished processing.");
+    console.log("Files processed: " + parser.getFileCount());
+    console.log("Users seen: " + parser.countTotalUsers());
+    console.log("Total messages: " + parser.countTotalMessages());
   }).catch((err) => {
     console.error("FATAL");
     console.error(err);
