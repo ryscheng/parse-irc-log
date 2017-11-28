@@ -29,9 +29,9 @@ function main() {
   let parent = process.argv[2];
   let dir = parent;
   let promises = [];
-  let parser = new ParseIRC("2016");
+  let msgCount = {};
 
-  // !!! 
+  // !!!
   //for (let month = 1; month <= 12; month++) {
   for (let month = 1; month <= 1; month++) {
     for (let day = 1; day <= 31; day++) {
@@ -41,6 +41,7 @@ function main() {
           // Just ignore
           return Promise.resolve();
         }
+        let parser = new ParseIRC(dir);
         return parser.processDir(dir)
       }.bind({}, dir)).catch((err) => {
         // File does not exist
