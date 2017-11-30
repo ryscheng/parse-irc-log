@@ -9,6 +9,7 @@ class ParseIRC {
     this._name = name;
     this._stats = {
       msgCount: {},
+      msgs: [],
       fileCount: 0,
     };
     this._errors = [];
@@ -40,14 +41,29 @@ class ParseIRC {
 
   countTotalMessages() {
     let result = 0;
-    for (let k in this._stats.msgCount) {
-      result += this._stats.msgCount[k];
+    for (let k1 in this._stats.msgCount) {
+      for (let k2 in this._stats.msgCount[k1]) {
+        result += this._stats.msgCount[k1][k2];
+      }
     }
     return result;
   }
 
   countTotalUsers() {
     return Object.keys(this._stats.msgCount).length;
+  }
+
+  sortMessages() {
+    function compare(a, b) {
+      if (a.time < b.time) {
+        return -1;
+      } else if (a.time > b.time) {
+        return 1;
+      }
+      return 0;
+    }
+    this._stats.msgs.sort(compare);
+    //console.log(this._stats.msgs);
   }
 
   /*********************
@@ -61,28 +77,29 @@ class ParseIRC {
       let promises = [];
       for (let i = 0; i < files.length; i++) {
         if (files[i].endsWith(".txt")) {
-          promises.push(this.processFile(path.join(dir, files[i])));
+          promises.push(this.processFile(dir, files[i]));
         }
       }
       return Promise.all(promises);
     }.bind(this, dir));
   }
 
-  processFile(filepath) {
+  processFile(dir, file) {
     //console.log(filepath);
-    return Q.nfapply(fs.readFile, [ filepath ]).then((data) => {
+    return Q.nfapply(fs.readFile, [ path.join(dir, file) ]).then(function(channel, data) {
       let parsed = null;
       let lines = data.toString().split("\n");
       //console.log(lines);
       for (let i = 0; i < lines.length; i++) {
         parsed = this.processLine(lines[i]);
         if (parsed !== null) {
+          parsed.channel = channel;
           this.processParsed(parsed);
         }
       }
       this._stats.fileCount++;
       return Promise.resolve();
-    });
+    }.bind(this, file));
   }
 
   processLine(line) {
@@ -108,7 +125,7 @@ class ParseIRC {
       return result;
     }
 
-    //console.log("Malformed line: " + line);
+    console.log("Malformed line: " + line);
     return null;
   }
   
@@ -118,7 +135,9 @@ class ParseIRC {
     }
     // @todo ignoring events
     //console.log("Event: " + line);
-    return null;
+    return {
+      code: "ignore",
+    };
   }
 
   processAction(line) {
@@ -164,10 +183,24 @@ class ParseIRC {
 
   processParsed(data) {
     //console.log(data);
+    // Explicit ignores
+    if (data.code === "ignore") {
+      return;
+    }
+
+    // Message log
+    this._stats.msgs.push(data);
+
+    // Per (user,channel) counts
     if (this._stats.msgCount.hasOwnProperty(data.user)) {
-      this._stats.msgCount[data.user]++;
+      if (this._stats.msgCount[data.user].hasOwnProperty(data.channel)) {
+        this._stats.msgCount[data.user][data.channel]++;
+      } else {
+        this._stats.msgCount[data.user][data.channel] = 1;
+      }
     } else {
-      this._stats.msgCount[data.user] = 1;
+      this._stats.msgCount[data.user] = {};
+      this._stats.msgCount[data.user][data.channel] = 1;
     }
   }
 

@@ -29,7 +29,7 @@ function main() {
   let parent = process.argv[2];
   let dir = parent;
   let promises = [];
-  let msgCount = {};
+  let parsers = [];
 
   // !!!
   //for (let month = 1; month <= 12; month++) {
@@ -41,8 +41,9 @@ function main() {
           // Just ignore
           return Promise.resolve();
         }
-        let parser = new ParseIRC(dir);
-        return parser.processDir(dir)
+        let p = new ParseIRC(dir);
+        parsers.push(p);
+        return p.processDir(dir);
       }.bind({}, dir)).catch((err) => {
         // File does not exist
         // console.error(err);
@@ -51,11 +52,18 @@ function main() {
   }
 
   Promise.all(promises).then(() => {
+    // Sort all messages
+    for (let i = 0; i < parsers.length; i++) {
+      parsers[i].sortMessages();
+    }
+    return Promise.resolve();
+  }).then(() => {
     //console.log(parser);
     console.log("Finished processing.");
-    console.log("Files processed: " + parser.getFileCount());
-    console.log("Users seen: " + parser.countTotalUsers());
-    console.log("Total messages: " + parser.countTotalMessages());
+    console.log("Files processed: " + parsers[0].getFileCount());
+    console.log("Users seen: " + parsers[0].countTotalUsers());
+    console.log("Total messages: " + parsers[0].countTotalMessages());
+    console.log(parsers[0].getStats().msgCount);
   }).catch((err) => {
     console.error("FATAL");
     console.error(err);
