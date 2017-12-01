@@ -9,9 +9,10 @@ class ParseIRC {
     this._name = name;
     this._errors = [];
     this._stats = {
-      msgCount: {},
-      msgs: [],
-      fileCount: 0,
+      channels: {}, // { channel => [ username ] }
+      msgCount: {}, // { username => { channel => count } }
+      msgs: [],     // [ MessageObj ]
+      fileCount: 0, // int
     };
   }
 
@@ -23,6 +24,27 @@ class ParseIRC {
     this._errors.push(err);
   }
 
+  _addUserToChannel(channel, username) {
+    if (!this._stats.channels.hasOwnProperty(channel)) {
+      this._stats.channels[channel] = [ username ];
+    } else if (this._stats.channels[channel].indexOf(username) === -1) {
+      this._stats.channels[channel].push(username);
+    }
+  }
+
+  _addMsgCount(user, channel, count) {
+    if (this._stats.msgCount.hasOwnProperty(user)) {
+      if (this._stats.msgCount[user].hasOwnProperty(channel)) {
+        this._stats.msgCount[user][channel] += count;
+      } else {
+        this._stats.msgCount[user][channel] = count;
+      }
+    } else {
+      this._stats.msgCount[user] = {};
+      this._stats.msgCount[user][channel] = count;
+    }
+  }
+
   /*********************
    * PUBLIC GETTERS
    *********************/
@@ -32,10 +54,19 @@ class ParseIRC {
     this._errors = this._errors.concat(p.getErrors);
     let s = p.getStats();
 
+    // channels
+    for (let channel in s.channels) {
+      let list = s.channels[channel];
+      for (let i = 0; i < list.length; i++) {
+        this._addUserToChannel(channel, list[i]);
+      }
+    }
+
+    // msgCount
     for (let user in s.msgCount) {
       for (let channel in s.msgCount[user]) {
         let count = s.msgCount[user][channel];
-        this.addMsgCount(user, channel, count);
+        this._addMsgCount(user, channel, count);
       }
     }
     this._stats.msgs = this._stats.msgs.concat(s.msgs)
@@ -56,6 +87,17 @@ class ParseIRC {
   
   getFileCount() {
     return this._stats.fileCount;
+  }
+
+  getUsers() {
+    return Object.keys(this._stats.msgCount);
+  }
+
+  getChannels(user) {
+    if (!this._stats.msgCount.hasOwnProperty(user)) {
+      return [];
+    }
+    return Object.keys(this._stats.msgCount[user]);
   }
 
   getAverageSubscriptions() {
@@ -82,6 +124,10 @@ class ParseIRC {
 
   countTotalUsers() {
     return Object.keys(this._stats.msgCount).length;
+  }
+
+  getMessages() {
+    return this._stats.msgs;
   }
 
   sortMessages() {
@@ -212,19 +258,6 @@ class ParseIRC {
     };
   }
 
-  addMsgCount(user, channel, count) {
-    if (this._stats.msgCount.hasOwnProperty(user)) {
-      if (this._stats.msgCount[user].hasOwnProperty(channel)) {
-        this._stats.msgCount[user][channel] += count;
-      } else {
-        this._stats.msgCount[user][channel] = count;
-      }
-    } else {
-      this._stats.msgCount[user] = {};
-      this._stats.msgCount[user][channel] = count;
-    }
-  }
-
   processParsed(data) {
     //console.log(data);
     // Explicit ignores
@@ -236,7 +269,10 @@ class ParseIRC {
     this._stats.msgs.push(data);
 
     // Per (user,channel) counts
-    this.addMsgCount(data.user, data.channel, 1);
+    this._addMsgCount(data.user, data.channel, 1);
+
+    // Channel members
+    this._addUserToChannel(data.channel, data.user);
   }
 
 }

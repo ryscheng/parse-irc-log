@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const Q = require("q");
 const ParseIRC = require("./ParseIRC");
+const Simulator = require("./Simulator");
 
 function doubleDigitStr(num) {
   if (num < 0) {
@@ -52,9 +53,11 @@ function main() {
   }
 
   Promise.all(promises).then(() => {
-    // Sort all messages
-    for (let i = 0; i < parsers.length; i++) {
-      parsers[i].sortMessages();
+    for (let i = 0; i < 1; i++) {
+    //for (let i = 0; i < parsers.length; i++) {
+      let sim = new Simulator(parsers[i]);
+      sim.playMessages();
+      console.log(sim);
     }
     return Promise.resolve();
   }).then(() => {
@@ -62,7 +65,6 @@ function main() {
     for (let i = 0; i < parsers.length; i++) {
       aggregate.merge(parsers[i]);
     }
-    aggregate.sortMessages();
     return Promise.resolve(aggregate);
   }).then((aggregate) => {
     //console.log(parser);
