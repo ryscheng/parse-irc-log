@@ -236,7 +236,7 @@ class ParseIRC {
     this._stats.msgs.push(data);
 
     // Per (user,channel) counts
-    this._addMsgCount(data.user, data.channel, 1);
+    this.addMsgCount(data.user, data.channel, 1);
   }
 
 }
