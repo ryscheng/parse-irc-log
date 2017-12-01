@@ -28,6 +28,10 @@ class Simulator {
   playMessages() {
     this._parser.sortMessages();
     let messages = this._parser.getMessages();
+    for (let i = 0; i < messages.length; i++) {
+      let msg = messages[i];
+
+    }
   }
 
 }

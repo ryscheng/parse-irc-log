@@ -57,7 +57,7 @@ function main() {
     //for (let i = 0; i < parsers.length; i++) {
       let sim = new Simulator(parsers[i]);
       sim.playMessages();
-      console.log(sim);
+      //console.log(sim);
     }
     return Promise.resolve();
   }).then(() => {
@@ -72,6 +72,7 @@ function main() {
     console.log("Files processed: " + aggregate.getFileCount());
     console.log("Users seen: " + aggregate.countTotalUsers());
     console.log("Average subscriptions: " + aggregate.getAverageSubscriptions());
+    console.log("Average membership: " + aggregate.getAverageTopicMembers());
     console.log("Total messages: " + aggregate.countTotalMessages());
     //console.log(aggregate.getStats().msgCount);
   }).catch((err) => {

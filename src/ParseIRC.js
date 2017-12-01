@@ -100,6 +100,16 @@ class ParseIRC {
     return Object.keys(this._stats.msgCount[user]);
   }
 
+  getAverageTopicMembers() {
+    let top = 0.0;
+    let bot = 0.0;
+    for (let c in this._stats.channels) {
+      top += this._stats.channels[c].length;
+      bot++;
+    }
+    return top/bot;
+  }
+
   getAverageSubscriptions() {
     let top = 0.0;
     let bot = 0.0;
