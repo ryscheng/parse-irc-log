@@ -7,12 +7,12 @@ const Q = require("q");
 class ParseIRC {
   constructor(name) {
     this._name = name;
+    this._errors = [];
     this._stats = {
       msgCount: {},
       msgs: [],
       fileCount: 0,
     };
-    this._errors = [];
   }
 
   /*********************
@@ -27,16 +27,47 @@ class ParseIRC {
    * PUBLIC GETTERS
    *********************/
 
-  getStats() {
-    return this._stats;
+  merge(p) {
+    this._name += ";" + p.getName();
+    this._errors = this._errors.concat(p.getErrors);
+    let s = p.getStats();
+
+    for (let user in s.msgCount) {
+      for (let channel in s.msgCount[user]) {
+        let count = s.msgCount[user][channel];
+        this.addMsgCount(user, channel, count);
+      }
+    }
+    this._stats.msgs = this._stats.msgs.concat(s.msgs)
+    this._stats.fileCount += s.fileCount;
   }
-  
+
+  getName() {
+    return this._name;
+  }
+
   getErrors() {
     return this._errors;
   }
 
+  getStats() {
+    return this._stats;
+  }
+  
   getFileCount() {
     return this._stats.fileCount;
+  }
+
+  getAverageSubscriptions() {
+    let top = 0.0;
+    let bot = 0.0;
+    for (let k1 in this._stats.msgCount) {
+      bot += 1;
+      for (let k2 in this._stats.msgCount[k1]) {
+        top += 1;
+      }
+    }
+    return top/bot;
   }
 
   countTotalMessages() {
@@ -181,6 +212,19 @@ class ParseIRC {
     };
   }
 
+  addMsgCount(user, channel, count) {
+    if (this._stats.msgCount.hasOwnProperty(user)) {
+      if (this._stats.msgCount[user].hasOwnProperty(channel)) {
+        this._stats.msgCount[user][channel] += count;
+      } else {
+        this._stats.msgCount[user][channel] = count;
+      }
+    } else {
+      this._stats.msgCount[user] = {};
+      this._stats.msgCount[user][channel] = count;
+    }
+  }
+
   processParsed(data) {
     //console.log(data);
     // Explicit ignores
@@ -192,16 +236,7 @@ class ParseIRC {
     this._stats.msgs.push(data);
 
     // Per (user,channel) counts
-    if (this._stats.msgCount.hasOwnProperty(data.user)) {
-      if (this._stats.msgCount[data.user].hasOwnProperty(data.channel)) {
-        this._stats.msgCount[data.user][data.channel]++;
-      } else {
-        this._stats.msgCount[data.user][data.channel] = 1;
-      }
-    } else {
-      this._stats.msgCount[data.user] = {};
-      this._stats.msgCount[data.user][data.channel] = 1;
-    }
+    this._addMsgCount(data.user, data.channel, 1);
   }
 
 }

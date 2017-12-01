@@ -58,12 +58,20 @@ function main() {
     }
     return Promise.resolve();
   }).then(() => {
+    let aggregate = new ParseIRC("total");
+    for (let i = 0; i < parsers.length; i++) {
+      aggregate.merge(parsers[i]);
+    }
+    aggregate.sortMessages();
+    return Promise.resolve(aggregate);
+  }).then((aggregate) => {
     //console.log(parser);
     console.log("Finished processing.");
-    console.log("Files processed: " + parsers[0].getFileCount());
-    console.log("Users seen: " + parsers[0].countTotalUsers());
-    console.log("Total messages: " + parsers[0].countTotalMessages());
-    console.log(parsers[0].getStats().msgCount);
+    console.log("Files processed: " + aggregate.getFileCount());
+    console.log("Users seen: " + aggregate.countTotalUsers());
+    console.log("Average subscriptions: " + aggregate.getAverageSubscriptions());
+    console.log("Total messages: " + aggregate.countTotalMessages());
+    //console.log(aggregate.getStats().msgCount);
   }).catch((err) => {
     console.error("FATAL");
     console.error(err);
