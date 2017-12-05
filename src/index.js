@@ -34,8 +34,8 @@ function main() {
   let parsers = [];
 
   // !!!
-  //for (let month = 1; month <= 12; month++) {
-  for (let month = 1; month <= 1; month++) {
+  for (let month = 1; month <= 12; month++) {
+  //for (let month = 1; month <= 1; month++) {
     for (let day = 1; day <= 31; day++) {
       dir = path.join(parent, doubleDigitStr(month), doubleDigitStr(day));
       promises.push(Q.nfapply(fs.lstat, [ dir ]).then(function(dir, stats) {
@@ -60,6 +60,7 @@ function main() {
       fileCount += parsers[i].getFileCount();
     }
     console.log("\t Files processed: " + fileCount);
+    return Promise.resolve();
   }).then(() => {
     /** Global Stats **/
     console.log("... computing global stats");
@@ -70,16 +71,20 @@ function main() {
     //console.log(parser);
     console.log("\t Users seen: " + stats.countTotalUsers());
     console.log("\t Total messages: " + stats.countTotalMessages());
+    console.log("\t Average subscriptions: " + stats.getAverageSubscriptions());
+    console.log("\t Average membership: " + stats.getAverageTopicMembers());
+    return Promise.resolve();
   }).then(() => {
     /** Daily Stats **/
+    /**
     console.log("... computing daily stats");
     let stats;
     for (let i = 0; i < parsers.length; i++) {
       stats = new Stats();
       stats.processMessageArray(parsers[i].getMessages());
     }
-    //console.log("\t Average subscriptions: " + stats.getAverageSubscriptions());
-    //console.log("\t Average membership: " + stats.getAverageTopicMembers());
+    **/
+    return Promise.resolve();
   }).then(() => {
     /** Create a simulator for each day **/
     console.log("... simulating messages");

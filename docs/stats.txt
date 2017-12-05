@@ -1,0 +1,22 @@
+$ node src/index.js ~/Downloads/irc-ubuntu/2016/
+Parsing IRC logs
+Finished reading all files...
+	 Files processed: 5026
+... computing global stats
+	 Users seen: 8586
+	 Total messages: 292068
+	 Average subscriptions: 1.2508735150244583
+	 Average membership: 77.82608695652173
+... simulating messages
+
+
+$ node src/index.js ~/Downloads/irc-ubuntu/2016/
+Parsing IRC logs
+Finished reading all files...
+	 Files processed: 24537
+... computing global stats
+	 Users seen: 32855
+	 Total messages: 1557812
+	 Average subscriptions: 1.2593212600821793
+	 Average membership: 237.78735632183907
+... simulating messages
