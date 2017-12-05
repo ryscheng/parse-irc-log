@@ -8,70 +8,14 @@ class ParseIRC {
   constructor(name) {
     this._name = name;
     this._errors = [];
-    this._stats = {
-      channels: {}, // { channel => [ username ] }
-      msgCount: {}, // { username => { channel => count } }
-      msgs: [],     // [ MessageObj ]
-      fileCount: 0, // int
-    };
+    this._fileCount = 0;
+    this._messages = [];
   }
+
 
   /*********************
-   * PRIVATE
+   * PUBLIC METHODS
    *********************/
-  _errHandler(err) {
-    console.error("Error: " + err);
-    this._errors.push(err);
-  }
-
-  _addUserToChannel(channel, username) {
-    if (!this._stats.channels.hasOwnProperty(channel)) {
-      this._stats.channels[channel] = [ username ];
-    } else if (this._stats.channels[channel].indexOf(username) === -1) {
-      this._stats.channels[channel].push(username);
-    }
-  }
-
-  _addMsgCount(user, channel, count) {
-    if (this._stats.msgCount.hasOwnProperty(user)) {
-      if (this._stats.msgCount[user].hasOwnProperty(channel)) {
-        this._stats.msgCount[user][channel] += count;
-      } else {
-        this._stats.msgCount[user][channel] = count;
-      }
-    } else {
-      this._stats.msgCount[user] = {};
-      this._stats.msgCount[user][channel] = count;
-    }
-  }
-
-  /*********************
-   * PUBLIC GETTERS
-   *********************/
-
-  merge(p) {
-    this._name += ";" + p.getName();
-    this._errors = this._errors.concat(p.getErrors);
-    let s = p.getStats();
-
-    // channels
-    for (let channel in s.channels) {
-      let list = s.channels[channel];
-      for (let i = 0; i < list.length; i++) {
-        this._addUserToChannel(channel, list[i]);
-      }
-    }
-
-    // msgCount
-    for (let user in s.msgCount) {
-      for (let channel in s.msgCount[user]) {
-        let count = s.msgCount[user][channel];
-        this._addMsgCount(user, channel, count);
-      }
-    }
-    this._stats.msgs = this._stats.msgs.concat(s.msgs)
-    this._stats.fileCount += s.fileCount;
-  }
 
   getName() {
     return this._name;
@@ -81,76 +25,12 @@ class ParseIRC {
     return this._errors;
   }
 
-  getStats() {
-    return this._stats;
-  }
-  
   getFileCount() {
-    return this._stats.fileCount;
-  }
-
-  getUsers() {
-    return Object.keys(this._stats.msgCount);
-  }
-
-  getChannels(user) {
-    if (!this._stats.msgCount.hasOwnProperty(user)) {
-      return [];
-    }
-    return Object.keys(this._stats.msgCount[user]);
-  }
-
-  getAverageTopicMembers() {
-    let top = 0.0;
-    let bot = 0.0;
-    for (let c in this._stats.channels) {
-      top += this._stats.channels[c].length;
-      bot++;
-    }
-    return top/bot;
-  }
-
-  getAverageSubscriptions() {
-    let top = 0.0;
-    let bot = 0.0;
-    for (let k1 in this._stats.msgCount) {
-      bot += 1;
-      for (let k2 in this._stats.msgCount[k1]) {
-        top += 1;
-      }
-    }
-    return top/bot;
-  }
-
-  countTotalMessages() {
-    let result = 0;
-    for (let k1 in this._stats.msgCount) {
-      for (let k2 in this._stats.msgCount[k1]) {
-        result += this._stats.msgCount[k1][k2];
-      }
-    }
-    return result;
-  }
-
-  countTotalUsers() {
-    return Object.keys(this._stats.msgCount).length;
+    return this._fileCount;
   }
 
   getMessages() {
-    return this._stats.msgs;
-  }
-
-  sortMessages() {
-    function compare(a, b) {
-      if (a.time < b.time) {
-        return -1;
-      } else if (a.time > b.time) {
-        return 1;
-      }
-      return 0;
-    }
-    this._stats.msgs.sort(compare);
-    //console.log(this._stats.msgs);
+    return this._messages;
   }
 
   /*********************
@@ -184,7 +64,7 @@ class ParseIRC {
           this.processParsed(parsed);
         }
       }
-      this._stats.fileCount++;
+      this._fileCount++;
       return Promise.resolve();
     }.bind(this, file));
   }
@@ -276,13 +156,7 @@ class ParseIRC {
     }
 
     // Message log
-    this._stats.msgs.push(data);
-
-    // Per (user,channel) counts
-    this._addMsgCount(data.user, data.channel, 1);
-
-    // Channel members
-    this._addUserToChannel(data.channel, data.user);
+    this._messages.push(data);
   }
 
 }

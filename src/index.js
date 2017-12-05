@@ -5,6 +5,7 @@ const path = require("path");
 const Q = require("q");
 const ParseIRC = require("./ParseIRC");
 const Simulator = require("./Simulator");
+const Stats = require("./Stats");
 
 function doubleDigitStr(num) {
   if (num < 0) {
@@ -53,28 +54,42 @@ function main() {
   }
 
   Promise.all(promises).then(() => {
+    console.log("Finished reading all files...");
+    let fileCount = 0;
+    for (let i = 0; i < parsers.length; i++) {
+      fileCount += parsers[i].getFileCount();
+    }
+    console.log("\t Files processed: " + fileCount);
+  }).then(() => {
+    /** Global Stats **/
+    console.log("... computing global stats");
+    let stats = new Stats();
+    for (let i = 0; i < parsers.length; i++) {
+      stats.processMessageArray(parsers[i].getMessages());
+    }
+    //console.log(parser);
+    console.log("\t Users seen: " + stats.countTotalUsers());
+    console.log("\t Total messages: " + stats.countTotalMessages());
+  }).then(() => {
+    /** Daily Stats **/
+    console.log("... computing daily stats");
+    let stats;
+    for (let i = 0; i < parsers.length; i++) {
+      stats = new Stats();
+      stats.processMessageArray(parsers[i].getMessages());
+    }
+    //console.log("\t Average subscriptions: " + stats.getAverageSubscriptions());
+    //console.log("\t Average membership: " + stats.getAverageTopicMembers());
+  }).then(() => {
+    /** Create a simulator for each day **/
+    console.log("... simulating messages");
     for (let i = 0; i < 1; i++) {
     //for (let i = 0; i < parsers.length; i++) {
-      let sim = new Simulator(parsers[i]);
-      sim.playMessages();
+      let sim = new Simulator(parsers[i].getMessages());
+      sim.run();
       //console.log(sim);
     }
     return Promise.resolve();
-  }).then(() => {
-    let aggregate = new ParseIRC("total");
-    for (let i = 0; i < parsers.length; i++) {
-      aggregate.merge(parsers[i]);
-    }
-    return Promise.resolve(aggregate);
-  }).then((aggregate) => {
-    //console.log(parser);
-    console.log("Finished processing.");
-    console.log("Files processed: " + aggregate.getFileCount());
-    console.log("Users seen: " + aggregate.countTotalUsers());
-    console.log("Average subscriptions: " + aggregate.getAverageSubscriptions());
-    console.log("Average membership: " + aggregate.getAverageTopicMembers());
-    console.log("Total messages: " + aggregate.countTotalMessages());
-    //console.log(aggregate.getStats().msgCount);
   }).catch((err) => {
     console.error("FATAL");
     console.error(err);
