@@ -3,10 +3,12 @@
 const fs = require("fs");
 const path = require("path");
 const Q = require("q");
+const moment = require("moment");
 
 class ParseIRC {
-  constructor(name) {
+  constructor(name, datePrefix) {
     this._name = name;
+    this._datePrefix = datePrefix;
     this._errors = [];
     this._fileCount = 0;
     this._messages = [];
@@ -60,8 +62,7 @@ class ParseIRC {
       for (let i = 0; i < lines.length; i++) {
         parsed = this.processLine(lines[i]);
         if (parsed !== null) {
-          parsed.channel = channel;
-          this.processParsed(parsed);
+          this.processParsed(parsed, channel);
         }
       }
       this._fileCount++;
@@ -148,12 +149,19 @@ class ParseIRC {
     };
   }
 
-  processParsed(data) {
+  processParsed(data, channel) {
     //console.log(data);
     // Explicit ignores
     if (data.code === "ignore") {
       return;
     }
+
+    // Set the channel
+    data.channel = channel;
+
+    // Set the date
+    let dateStr = this._datePrefix + data.time;
+    data.date = moment(dateStr).toDate();
 
     // Message log
     this._messages.push(data);

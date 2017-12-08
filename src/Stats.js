@@ -46,7 +46,14 @@ class Stats {
     return Object.keys(this._data.msgCount);
   }
 
-  getChannels(user) {
+  getUsersForChannel(c) {
+    if (!this._data.channels.hasOwnProperty(c)) {
+      return [];
+    }
+    return this._data.channels[c];
+  }
+
+  getChannelsForUser(user) {
     if (!this._data.msgCount.hasOwnProperty(user)) {
       return [];
     }

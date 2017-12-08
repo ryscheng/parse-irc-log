@@ -29,24 +29,24 @@ function main() {
   }
 
   let parent = process.argv[2];
-  let dir = parent;
   let promises = [];
   let parsers = [];
 
   // !!!
-  for (let month = 1; month <= 12; month++) {
-  //for (let month = 1; month <= 1; month++) {
+  //for (let month = 1; month <= 12; month++) {
+  for (let month = 1; month <= 1; month++) {
     for (let day = 1; day <= 31; day++) {
-      dir = path.join(parent, doubleDigitStr(month), doubleDigitStr(day));
-      promises.push(Q.nfapply(fs.lstat, [ dir ]).then(function(dir, stats) {
+      let dir = path.join(parent, doubleDigitStr(month), doubleDigitStr(day));
+      let datePrefix = "2016-" + doubleDigitStr(month) + "-" + doubleDigitStr(day) + " ";
+      let p = new ParseIRC(dir, datePrefix);
+      promises.push(Q.nfapply(fs.lstat, [ dir ]).then(function(p, dir, stats) {
         if (!stats.isDirectory()) {
           // Just ignore
           return Promise.resolve();
         }
-        let p = new ParseIRC(dir);
         parsers.push(p);
         return p.processDir(dir);
-      }.bind({}, dir)).catch((err) => {
+      }.bind({}, p, dir)).catch((err) => {
         // File does not exist
         // console.error(err);
       }));
@@ -73,24 +73,14 @@ function main() {
     console.log("\t Total messages: " + stats.countTotalMessages());
     console.log("\t Average subscriptions: " + stats.getAverageSubscriptions());
     console.log("\t Average membership: " + stats.getAverageTopicMembers());
-    return Promise.resolve();
-  }).then(() => {
-    /** Daily Stats **/
-    /**
-    console.log("... computing daily stats");
-    let stats;
-    for (let i = 0; i < parsers.length; i++) {
-      stats = new Stats();
-      stats.processMessageArray(parsers[i].getMessages());
-    }
-    **/
-    return Promise.resolve();
-  }).then(() => {
+    return Promise.resolve(stats);
+  }).then((globalStats) => {
     /** Create a simulator for each day **/
     console.log("... simulating messages");
     for (let i = 0; i < 1; i++) {
     //for (let i = 0; i < parsers.length; i++) {
-      let sim = new Simulator(parsers[i].getMessages());
+      //let sim = new Simulator(parsers[i].getMessages(), globalStats);
+      let sim = new Simulator(parsers[i].getMessages(), null);
       sim.run();
       //console.log(sim);
     }
