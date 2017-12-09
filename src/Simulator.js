@@ -13,27 +13,12 @@ class Simulator {
     } else {
       this._stats = stats;
     }
-    this._users = {};     // { username => User }
-    this._setup();
+    this._sortMessages();
   }
 
   /***************
    * PRIVATE METHODS
    ***************/
-  _setup() {
-    // Create users
-    this._users = {};
-    let usernames = this._stats.getUsers();
-    for (let i = 0; i < usernames.length; i++) {
-      let u = usernames[i];
-      let chan = this._stats.getChannelsForUser(u);
-      this._users[u] = new User(u, chan);
-    }
-
-    // Sort messages 
-    this._sortMessages();
-  }
-
   _sortMessages() {
     function compare(a, b) {
       if (a.date < b.date) {
@@ -50,25 +35,34 @@ class Simulator {
    * PUBLIC METHODS
    ***************/
   run() {
-    // Process messages
-    for (let i = 0; i < this._messages.length; i++) {
-      let msg = this._messages[i];
-      this.processMessage(msg);
-    }
+    let writeUsers = {};     // { username => User }
+    let writePeriod = 1000;
+    // Create users for writes
+    this._stats.getUsers().forEach((u) => {
+      writeUsers[u] = new User(u, writePeriod)
+    });
+
+    // Populate write schedule
+    let messages = this._messages.map((msg) => {
+      msg.startTime = msg.date.getTime();
+      msg.postTime = writeUsers[msg.user].queue(msg.startTime);
+      return msg;
+    });
+    
+    // Sort on write schedule
+    messages = messages.sort((a, b) => { return a.postTime - b.postTime; });
 
     // Tell users we're done
-    for (let u in this._users) {
-      this._users[u].finish();
-    }
+    Object.keys(writeUsers).forEach((u) => {
+      writeUsers[u].finish();
+    });
   }
 
   processMessage(msg) {
-    let username = msg.user;
-    let date = msg.date;
+
     let subscribers = this._stats.getUsersForChannel(msg.channel);
-    this._users[username].queueWrite(date);
     for (let i = 0; i < subscribers.length; i++) {
-      this._users[subscribers[i]].queueRead(date);
+      this._users[subscribers[i]].queueRead(startTime, postTime);
     }
   }
 

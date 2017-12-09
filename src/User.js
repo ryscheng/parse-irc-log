@@ -3,19 +3,34 @@
 const moment = require("moment");
 
 class User {
-  constructor(name, channelList) {
+  constructor(name, period) {
     this._name = name;
-    this._channels = channelList;
-    this._lastWrite = null;
-    this._lastRead = null;
+    this._period = period;
+    this._last = null;
+    this._countDummy = 0;
+    this._countReal = 0;
   }
 
-  queueWrite(writeDate) {
+  // Return time it was actually posted
+  queue(startTime) {
+    // If first message
+    if (this._last === null) {
+      this._last = startTime;
+      this._countReal++;
+      return startTime;
+    }
 
-    return Promise.resolve();
-  }
+    // Dummy messages up to here
+    for (let next = (this._last + this._period); next < startTime; next += this._period) {
+      this._countDummy++;
+      this._last = next;
+    }
 
-  queueRead(writeDate) {
+    // Write message
+    this._last += this._period;
+    this._countReal++;
+
+    return this._last;
   }
 
   finish() {
