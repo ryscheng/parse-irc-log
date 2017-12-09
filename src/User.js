@@ -11,6 +11,14 @@ class User {
     this._countReal = 0;
   }
 
+  getDummy() {
+    return this._countDummy;
+  }
+
+  getReal() {
+    return this._countReal;
+  }
+
   // Return time it was actually posted
   queue(startTime) {
     // If first message
@@ -33,7 +41,9 @@ class User {
     return this._last;
   }
 
-  finish() {
+  finish(time) {
+    this.queue(time);
+    this._countReal -= 1;
   }
 
 }
