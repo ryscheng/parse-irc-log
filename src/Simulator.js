@@ -50,17 +50,26 @@ class Simulator {
    * PUBLIC METHODS
    ***************/
   run() {
+    // Process messages
     for (let i = 0; i < this._messages.length; i++) {
       let msg = this._messages[i];
       this.processMessage(msg);
     }
+
+    // Tell users we're done
+    for (let u in this._users) {
+      this._users[u].finish();
+    }
   }
 
   processMessage(msg) {
-    let user = msg.user;
+    let username = msg.user;
     let date = msg.date;
     let subscribers = this._stats.getUsersForChannel(msg.channel);
-
+    this._users[username].queueWrite(date);
+    for (let i = 0; i < subscribers.length; i++) {
+      this._users[subscribers[i]].queueRead(date);
+    }
   }
 
 }

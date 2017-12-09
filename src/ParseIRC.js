@@ -156,6 +156,9 @@ class ParseIRC {
       return;
     }
 
+    // Set ID
+    data.id = Math.random();
+
     // Set the channel
     data.channel = channel;
 
