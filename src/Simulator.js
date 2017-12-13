@@ -35,7 +35,7 @@ class Simulator {
    * PUBLIC METHODS
    ***************/
   run() {
-    let writePeriod = 86400000; //3600000 = 1hr
+    let writePeriod = 3600000; //3600000 = 1hr
     let readPeriod = 1000;
 
     let writeUsers = {};     // { username => User }
@@ -64,13 +64,13 @@ class Simulator {
     // @TODO
 
     // Tell users we're done
-    let lastTime = messages[messages.length - 1].postTime;
+    let lastTime = messages[messages.length - 1].startTime;
     let totalDummyWrite = 0;
     let totalRealWrite = 0;
     let totalDummyRead = 0;
     let totalRealRead = 0;
     Object.keys(writeUsers).forEach((u) => {
-      writeUsers[u].finish(lastTime);
+      //writeUsers[u].finish(lastTime);
       totalDummyWrite += writeUsers[u].getDummy();
       totalRealWrite += writeUsers[u].getReal();
     });

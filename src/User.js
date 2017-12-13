@@ -28,6 +28,10 @@ class User {
       return startTime;
     }
 
+    //console.log("---");
+    //console.log("Start: " + startTime);
+    //console.log("Last: " + this._last);
+
     // Dummy messages up to here
     for (let next = (this._last + this._period); next < startTime; next += this._period) {
       this._countDummy++;
