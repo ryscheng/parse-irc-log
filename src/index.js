@@ -77,11 +77,14 @@ function main() {
   }).then((globalStats) => {
     /** Create a simulator for each day **/
     console.log("... simulating messages");
-    for (let i = 0; i < 1; i++) {
+    // !!!
     //for (let i = 0; i < parsers.length; i++) {
-      //let sim = new Simulator(parsers[i].getMessages(), globalStats);
+    for (let i = 0; i < 1; i++) {
+      let writePeriod = 1000; //3600000 = 1hr
+      let readPeriod = 1000;
       let sim = new Simulator(parsers[i].getMessages(), null);
-      sim.run();
+      //let sim = new Simulator(parsers[i].getMessages(), globalStats);
+      sim.run(writePeriod, readPeriod);
       //console.log(sim);
     }
     return Promise.resolve();
