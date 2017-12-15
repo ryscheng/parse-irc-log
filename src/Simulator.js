@@ -65,7 +65,8 @@ class Simulator {
       dummyWrite: 0,
       realWrite: 0,
       dummyRead: 0,
-      realRead:0,
+      realRead: 0,
+      users: this._stats.countTotalUsers(),
     }
     messages.forEach((msg) => {
       let subscribers = this._stats.getUsersForChannel(msg.channel);

@@ -43,13 +43,14 @@ function main() {
   let parent = process.argv[2];
   let promises = [];
   let parsers = [];
+  let outputStr = "";
 
   /** Parse all logs, store in memory **/
   // !!!
-  for (let month = 1; month <= 1; month++) {
+  for (let month = 1; month <= 12; month++) {
     for (let day = 1; day <= 31; day++) {
   /**
-  for (let month = 1; month <= 12; month++) {
+  for (let month = 1; month <= 1; month++) {
     for (let day = 1; day <= 1; day++) {
   **/
       let dir = path.join(parent, doubleDigitStr(month), doubleDigitStr(day));
@@ -117,10 +118,11 @@ function main() {
     const TTL = 86400000; // 1 day
     const N = 524000; // support MAX_DAILY_USERS(1264) @1msg/sec
     const ONLINE_FACTOR = 0.086;
-    for (let readPeriod = 1000; readPeriod < 3600000; readPeriod = Math.floor(readPeriod*1.5)) {  //3600000 = 1hr
+    for (let readPeriod = 1000; readPeriod < 36000; readPeriod = Math.floor(readPeriod*1.25)) {  //3600000 = 1hr
       console.log("-----------");
       console.log("readPeriod (s): " + (readPeriod/1000));
-      console.log("totalRuns: " + parsers.length);
+      process.stderr.write("\nreadPeriod (s): " + (readPeriod/1000) + "\n");
+      process.stderr.write("totalRuns: " + parsers.length + "\n");
       let total = {};
       let bar = new ProgressBar("simulating [:bar] :elapsed seconds", { total: parsers.length });
       parsers.forEach(function(bar, readPeriod, parser) {
@@ -132,19 +134,40 @@ function main() {
         let t = sim.run(writePeriod, readPeriod);
         total = mergeIn(t, total);
         bar.tick();
-        process.stdout.write(bar.curr + ",");
+        process.stderr.write(bar.curr + ",");
       }.bind(this, bar, readPeriod));
       // Correction
       total.dummyRead = Math.floor(total.dummyRead*ONLINE_FACTOR);
       total.dummyWrite = Math.floor(total.dummyWrite*ONLINE_FACTOR);
-      console.log();
+      let percentWrite = (100.0 * total.realWrite / (total.realWrite + total.dummyWrite));
+      let percentRead = (100.0 * total.realRead / (total.realRead + total.dummyRead));
+      let writesPerUser = (total.dummyWrite + total.realWrite) / total.users;
+      let readsPerUser = (total.dummyRead + total.realRead) / total.users;
+      let writeBW = 1.08 * writesPerUser; //KB
+      let readBW = 20.46 * readsPerUser; //KB bucketDepth=4
+      //let readBW = 4.16 * (total.dummyRead + total.realRead); //KB
+      let averageLatency = (total.latency / (total.realRead * 1000.0)); // seconds
       console.log("Percentage Real Write");
-      console.log((100.0 * total.realWrite / (total.realWrite + total.dummyWrite)) + "%"); 
+      console.log(percentWrite + "%"); 
       console.log("Percentage Real Read");
-      console.log((100.0 * total.realRead / (total.realRead + total.dummyRead)) + "%"); 
+      console.log(percentRead + "%"); 
+      console.log("Average Writes/Day per User");
+      console.log(writesPerUser);
+      console.log("Average Reads/Day per User");
+      console.log(readsPerUser);
+      console.log("Average Write B/W per User (KB/day)");
+      console.log(writeBW);
+      console.log("Average Read B/W per User (KB/day)");
+      console.log(readBW);
       console.log("Average E2E Latency (s)");
-      console.log(total.latency / (total.realRead * 1000.0));
+      console.log(averageLatency);
+      outputStr += (readPeriod / 1000);
+      outputStr += "\t" + (writeBW+readBW);
+      outputStr += "\t" + averageLatency; 
+      outputStr += "\n";
     }
+    console.log("----------");
+    console.log(outputStr);
     return Promise.resolve();
   }).catch((err) => {
     console.error("FATAL");
