@@ -3,6 +3,7 @@
 const fs = require("fs");
 const path = require("path");
 const Q = require("q");
+const ProgressBar = require('progress');
 const ParseIRC = require("./ParseIRC");
 const Simulator = require("./Simulator");
 const Stats = require("./Stats");
@@ -45,12 +46,12 @@ function main() {
 
   /** Parse all logs, store in memory **/
   // !!!
+  for (let month = 1; month <= 1; month++) {
+    for (let day = 1; day <= 31; day++) {
   /**
   for (let month = 1; month <= 12; month++) {
-    for (let day = 1; day <= 31; day++) {
-  **/
-  for (let month = 1; month <= 1; month++) {
     for (let day = 1; day <= 1; day++) {
+  **/
       let dir = path.join(parent, doubleDigitStr(month), doubleDigitStr(day));
       let datePrefix = "2016-" + doubleDigitStr(month) + "-" + doubleDigitStr(day) + " ";
       let p = new ParseIRC(dir, datePrefix);
@@ -117,8 +118,11 @@ function main() {
     const N = 524000; // support MAX_DAILY_USERS(1264) @1msg/sec
     const ONLINE_FACTOR = 0.086;
     for (let readPeriod = 1000; readPeriod < 3600000; readPeriod = Math.floor(readPeriod*1.5)) {  //3600000 = 1hr
+      console.log("-----------");
+      console.log("readPeriod: " + readPeriod);
       let total = {};
-      parsers.forEach(function(readPeriod, parser) {
+      let bar = new ProgressBar("simulating [:bar] :elapsed seconds", { total: parsers.length });
+      parsers.forEach(function(bar, readPeriod, parser) {
         let stats = new Stats(parser.getMessages());
         let writePeriod = (TTL * stats.countTotalUsers() * ONLINE_FACTOR) / N;
           //17.9s for busiest day (3.46 minutes w/o ONLINE_FACTOR)
@@ -126,12 +130,11 @@ function main() {
         let sim = new Simulator(parser.getMessages(), null);
         let t = sim.run(writePeriod, readPeriod);
         total = mergeIn(t, total);
-      }.bind(this, readPeriod));
+        bar.tick();
+      }.bind(this, bar, readPeriod));
       // Correction
       total.dummyRead = Math.floor(total.dummyRead*ONLINE_FACTOR);
       total.dummyWrite = Math.floor(total.dummyWrite*ONLINE_FACTOR);
-      console.log("-----------");
-      console.log("readPeriod: " + readPeriod);
       console.log("Percentage Real Write");
       console.log((100.0 * total.realWrite / (total.realWrite + total.dummyWrite)) + "%"); 
       console.log("Percentage Real Read");

@@ -90,14 +90,6 @@ class Simulator {
       total.realRead += readUsers[u].getReal();
     });
 
-    /**
-    console.log("-----------");
-    console.log(total.dummyWrite);
-    console.log(total.realWrite);
-    console.log(total.dummyRead);
-    console.log(total.realRead);
-    console.log(total.latency);
-    **/
     return total;
   }
 
