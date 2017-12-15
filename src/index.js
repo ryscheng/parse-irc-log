@@ -161,9 +161,9 @@ function main() {
       console.log(readBW);
       console.log("Average E2E Latency (s)");
       console.log(averageLatency);
-      outputStr += (1000 / readPeriod);     // Read Rate
-      outputStr += "\t" + (writeBW+readBW); // Total B/W
-      outputStr += "\t" + averageLatency; 
+      outputStr += (readPeriod / 1000);               // (s)
+      outputStr += "\t" + ((writeBW+readBW) / 1000);  // Total B/W (MB)
+      outputStr += "\t" + averageLatency;             // (s)
       outputStr += "\n";
     }
     console.log("----------");
