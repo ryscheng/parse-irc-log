@@ -20,6 +20,17 @@ function doubleDigitStr(num) {
   return doubleDigitStr(num%100);
 }
 
+function mergeIn(src, dst) {
+  for (let k in src) {
+    if (dst.hasOwnProperty(k)) {
+      dst[k] += src[k];
+    } else {
+      dst[k] = src[k];
+    }
+  }
+  return dst;
+}
+
 function main() {
   console.log("Parsing IRC logs");
 
@@ -101,21 +112,33 @@ function main() {
   }).then((globalStats) => {
     /** Create a simulator for each day **/
     console.log("... simulating messages");
-    /**
-    parsers.forEach((parser) => {
-      const TTL = 86400000; // 1 day
-      const N = ;
-      let messages = parser.getMessages();
-      //let stats = globalStats;
-      let stats = new Stats(messages); // Daily stats
-      let writePeriod = N / (TTL * stats.getUsers().length); //3600000 = 1hr
-      let readPeriod = 1000;
-      let sim = new Simulator(messages, stats);
-      sim.run(writePeriod, readPeriod);
-      //console.log(sim);
 
-    });
-    **/
+    const TTL = 86400000; // 1 day
+    const N = 524000; // support MAX_DAILY_USERS(1264) @1msg/sec
+    const ONLINE_FACTOR = 0.086;
+    for (let readPeriod = 1000; readPeriod < 3600000; readPeriod = Math.floor(readPeriod*1.5)) {  //3600000 = 1hr
+      let total = {};
+      parsers.forEach(function(readPeriod, parser) {
+        let stats = new Stats(parser.getMessages());
+        let writePeriod = (TTL * stats.countTotalUsers() * ONLINE_FACTOR) / N;
+          //17.9s for busiest day (3.46 minutes w/o ONLINE_FACTOR)
+        //console.log(writePeriod);
+        let sim = new Simulator(parser.getMessages(), null);
+        let t = sim.run(writePeriod, readPeriod);
+        total = mergeIn(t, total);
+      }.bind(this, readPeriod));
+      // Correction
+      total.dummyRead = Math.floor(total.dummyRead*ONLINE_FACTOR);
+      total.dummyWrite = Math.floor(total.dummyWrite*ONLINE_FACTOR);
+      console.log("-----------");
+      console.log("readPeriod: " + readPeriod);
+      console.log("Percentage Real Write");
+      console.log((100.0 * total.realWrite / (total.realWrite + total.dummyWrite)) + "%"); 
+      console.log("Percentage Real Read");
+      console.log((100.0 * total.realRead / (total.realRead + total.dummyRead)) + "%"); 
+      console.log("Average E2E Latency (s)");
+      console.log(total.latency / (total.realRead * 1000.0));
+    }
     return Promise.resolve();
   }).catch((err) => {
     console.error("FATAL");

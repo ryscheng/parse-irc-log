@@ -60,12 +60,18 @@ class Simulator {
     });
     
     // Calculate read schedule
-    let totalLatency = 0;
+    let total = {
+      latency: 0,
+      dummyWrite: 0,
+      realWrite: 0,
+      dummyRead: 0,
+      realRead:0,
+    }
     messages.forEach((msg) => {
       let subscribers = this._stats.getUsersForChannel(msg.channel);
       subscribers.forEach(function (msg, subscriber) {
         let readTime = readUsers[subscriber].queue(msg.postTime);
-        totalLatency += (readTime - msg.startTime);
+        total.latency += (readTime - msg.startTime);
         //console.log((readTime - msg.startTime)/1000);
         //this._users[subscribers[i]].queueRead(startTime, postTime);
       }.bind(this, msg));
@@ -73,35 +79,26 @@ class Simulator {
 
     // Tell users we're done + calculate final stats
     let lastTime = messages[messages.length - 1].startTime;
-    let totalDummyWrite = 0;
-    let totalRealWrite = 0;
-    let totalDummyRead = 0;
-    let totalRealRead = 0;
     Object.keys(writeUsers).forEach((u) => {
       writeUsers[u].finish(lastTime);
-      totalDummyWrite += writeUsers[u].getDummy();
-      totalRealWrite += writeUsers[u].getReal();
+      total.dummyWrite += writeUsers[u].getDummy();
+      total.realWrite += writeUsers[u].getReal();
     });
     Object.keys(readUsers).forEach((u) => {
       readUsers[u].finish(lastTime);
-      totalDummyRead += readUsers[u].getDummy();
-      totalRealRead += readUsers[u].getReal();
+      total.dummyRead += readUsers[u].getDummy();
+      total.realRead += readUsers[u].getReal();
     });
 
+    /**
     console.log("-----------");
-    console.log(totalDummyWrite);
-    console.log(totalRealWrite);
-    console.log(totalDummyRead);
-    console.log(totalRealRead);
-    console.log(totalLatency);
-    console.log("-----------");
-
-    console.log("Percentage Real Write");
-    console.log((100.0 * totalRealWrite / (totalRealWrite + totalDummyWrite)) + "%"); 
-    console.log("Percentage Real Read");
-    console.log((100.0 * totalRealRead / (totalRealRead + totalDummyRead)) + "%"); 
-    console.log("Average E2E Latency (s)");
-    console.log(totalLatency / (totalRealRead * 1000.0));
+    console.log(total.dummyWrite);
+    console.log(total.realWrite);
+    console.log(total.dummyRead);
+    console.log(total.realRead);
+    console.log(total.latency);
+    **/
+    return total;
   }
 
 }
