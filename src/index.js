@@ -119,7 +119,8 @@ function main() {
     const ONLINE_FACTOR = 0.086;
     for (let readPeriod = 1000; readPeriod < 3600000; readPeriod = Math.floor(readPeriod*1.5)) {  //3600000 = 1hr
       console.log("-----------");
-      console.log("readPeriod: " + readPeriod);
+      console.log("readPeriod (s): " + (readPeriod/1000));
+      console.log("totalRuns: " + parsers.length);
       let total = {};
       let bar = new ProgressBar("simulating [:bar] :elapsed seconds", { total: parsers.length });
       parsers.forEach(function(bar, readPeriod, parser) {
@@ -131,10 +132,12 @@ function main() {
         let t = sim.run(writePeriod, readPeriod);
         total = mergeIn(t, total);
         bar.tick();
+        process.stdout.write(bar.curr + ",");
       }.bind(this, bar, readPeriod));
       // Correction
       total.dummyRead = Math.floor(total.dummyRead*ONLINE_FACTOR);
       total.dummyWrite = Math.floor(total.dummyWrite*ONLINE_FACTOR);
+      console.log();
       console.log("Percentage Real Write");
       console.log((100.0 * total.realWrite / (total.realWrite + total.dummyWrite)) + "%"); 
       console.log("Percentage Real Read");
