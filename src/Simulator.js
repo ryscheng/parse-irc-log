@@ -5,11 +5,10 @@ const Stats = require("./Stats");
 
 class Simulator {
   constructor(messages, stats) {
-    this._messages = messages;
+    this._messages = messages.slice();
     if (stats === null ||
        typeof stats === "undefined") {
-      this._stats = new Stats();
-      this._stats.processMessageArray(messages);
+      this._stats = new Stats(messages);
     } else {
       this._stats = stats;
     }

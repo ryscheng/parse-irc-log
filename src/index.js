@@ -32,10 +32,14 @@ function main() {
   let promises = [];
   let parsers = [];
 
+  /** Parse all logs, store in memory **/
   // !!!
-  //for (let month = 1; month <= 12; month++) {
-  for (let month = 1; month <= 1; month++) {
+  /**
+  for (let month = 1; month <= 12; month++) {
     for (let day = 1; day <= 31; day++) {
+  **/
+  for (let month = 1; month <= 1; month++) {
+    for (let day = 1; day <= 1; day++) {
       let dir = path.join(parent, doubleDigitStr(month), doubleDigitStr(day));
       let datePrefix = "2016-" + doubleDigitStr(month) + "-" + doubleDigitStr(day) + " ";
       let p = new ParseIRC(dir, datePrefix);
@@ -62,6 +66,25 @@ function main() {
     console.log("\t Files processed: " + fileCount);
     return Promise.resolve();
   }).then(() => {
+    /** Calculate max daily stats **/
+    console.log("... computing max daily stats")
+    let maxUsers = 0;
+    let maxMessages = 0;
+    parsers.forEach((p) => {
+      let stats = new Stats(p.getMessages());
+      let num = stats.countTotalUsers();
+      if (num > maxUsers) {
+        maxUsers = num;
+      }
+      num = stats.countTotalMessages();
+      if (num > maxMessages) {
+        maxMessages = num;
+      }
+    });
+    console.log("\t Max users in a day: " + maxUsers);
+    console.log("\t Max messages in a day: " + maxMessages);
+    return Promise.resolve();
+  }).then(() => {
     /** Global Stats **/
     console.log("... computing global stats");
     let stats = new Stats();
@@ -69,24 +92,30 @@ function main() {
       stats.processMessageArray(parsers[i].getMessages());
     }
     //console.log(parser);
-    console.log("\t Users seen: " + stats.countTotalUsers());
+    console.log("\t Total Users seen: " + stats.countTotalUsers());
     console.log("\t Total messages: " + stats.countTotalMessages());
     console.log("\t Average subscriptions: " + stats.getAverageSubscriptions());
     console.log("\t Average membership: " + stats.getAverageTopicMembers());
+
     return Promise.resolve(stats);
   }).then((globalStats) => {
     /** Create a simulator for each day **/
     console.log("... simulating messages");
-    // !!!
-    //for (let i = 0; i < parsers.length; i++) {
-    for (let i = 0; i < 1; i++) {
-      let writePeriod = 1000; //3600000 = 1hr
+    /**
+    parsers.forEach((parser) => {
+      const TTL = 86400000; // 1 day
+      const N = ;
+      let messages = parser.getMessages();
+      //let stats = globalStats;
+      let stats = new Stats(messages); // Daily stats
+      let writePeriod = N / (TTL * stats.getUsers().length); //3600000 = 1hr
       let readPeriod = 1000;
-      let sim = new Simulator(parsers[i].getMessages(), null);
-      //let sim = new Simulator(parsers[i].getMessages(), globalStats);
+      let sim = new Simulator(messages, stats);
       sim.run(writePeriod, readPeriod);
       //console.log(sim);
-    }
+
+    });
+    **/
     return Promise.resolve();
   }).catch((err) => {
     console.error("FATAL");

@@ -1,12 +1,17 @@
 "use strict";
 
 class Stats {
-  constructor() {
+  constructor(messages) {
     this._messages = [];
     this._data= {
       channels: {}, // { channel => [ username ] }
       msgCount: {}, // { username => { channel => count } }
     };
+
+    // Optional parameter to construct
+    if (Array.isArray(messages)) {
+      this.processMessageArray(messages);
+    }
   }
 
   /*********************

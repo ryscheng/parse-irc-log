@@ -1,3 +1,4 @@
+# JANUARY
 $ node src/index.js ~/Downloads/irc-ubuntu/2016/
 Parsing IRC logs
 Finished reading all files...
@@ -10,10 +11,14 @@ Finished reading all files...
 ... simulating messages
 
 
+# TOTAL
 $ node src/index.js ~/Downloads/irc-ubuntu/2016/
 Parsing IRC logs
 Finished reading all files...
 	 Files processed: 24537
+... computing max daily stats
+	 Max users in a day: 1264
+	 Max messages in a day: 19209
 ... computing global stats
 	 Users seen: 32855
 	 Total messages: 1557812
