@@ -48,6 +48,12 @@ class Simulator {
       newMsg.postTime = writeUsers[newMsg.user].queue(newMsg.startTime);
       return newMsg;
     });
+    let lastTime;
+    for (let i = (messages.length-1); i >= 0; i--) {
+      if (typeof messages[i] !== "undefined") {
+        lastTime = messages[i].startTime;
+      }
+    }
     
     // Sort on write schedule
     messages = messages.sort((a, b) => { return a.postTime - b.postTime; });
@@ -79,7 +85,6 @@ class Simulator {
     });
 
     // Tell users we're done + calculate final stats
-    let lastTime = messages[messages.length - 1].startTime;
     Object.keys(writeUsers).forEach((u) => {
       writeUsers[u].finish(lastTime);
       total.dummyWrite += writeUsers[u].getDummy();
