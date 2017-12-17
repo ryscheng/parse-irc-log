@@ -14,7 +14,6 @@ class ParseIRC {
     this._messages = [];
   }
 
-
   /*********************
    * PUBLIC METHODS
    *********************/

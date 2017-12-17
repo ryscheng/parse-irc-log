@@ -46,7 +46,7 @@ function main() {
   let outputStr = "";
 
   /** Parse all logs, store in memory **/
-  // !!!
+  // !!! TESTING !!!
   for (let month = 1; month <= 12; month++) {
     for (let day = 1; day <= 31; day++) {
   /**
@@ -74,6 +74,11 @@ function main() {
     console.log("Finished reading all files...");
     let fileCount = 0;
     for (let i = 0; i < parsers.length; i++) {
+      let fc = parsers[i].getFileCount();
+      let mc = parsers[i].getMessages().length;
+      if (fc <= 0 || mc <= 0) {
+        return Promise.reject("Invalid ParseIRC object: " + JSON.stringify(parsers[i]));
+      }
       fileCount += parsers[i].getFileCount();
     }
     console.log("\t Files processed: " + fileCount);
@@ -83,6 +88,8 @@ function main() {
     console.log("... computing max daily stats")
     let maxUsers = 0;
     let maxMessages = 0;
+    let totalTopicMembers = 0;
+    let count = 0;
     parsers.forEach((p) => {
       let stats = new Stats(p.getMessages());
       let num = stats.countTotalUsers();
@@ -93,9 +100,12 @@ function main() {
       if (num > maxMessages) {
         maxMessages = num;
       }
+      totalTopicMembers += stats.getAverageTopicMembers();
+      count += 1;
     });
     console.log("\t Max users in a day: " + maxUsers);
     console.log("\t Max messages in a day: " + maxMessages);
+    console.log("\t Average daily members per topic: " + (1.0 * totalTopicMembers / count));
     return Promise.resolve();
   }).then(() => {
     /** Global Stats **/
