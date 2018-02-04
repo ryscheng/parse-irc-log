@@ -12,6 +12,7 @@ class Simulator {
     } else {
       this._stats = stats;
     }
+
     this._sortMessages();
   }
 

@@ -47,12 +47,12 @@ function main() {
 
   /** Parse all logs, store in memory **/
   // !!! TESTING !!!
+  /**
   for (let month = 1; month <= 12; month++) {
     for (let day = 1; day <= 31; day++) {
-  /**
+  **/
   for (let month = 1; month <= 1; month++) {
     for (let day = 1; day <= 1; day++) {
-  **/
       let dir = path.join(parent, doubleDigitStr(month), doubleDigitStr(day));
       let datePrefix = "2016-" + doubleDigitStr(month) + "-" + doubleDigitStr(day) + " ";
       let p = new ParseIRC(dir, datePrefix);
@@ -89,6 +89,7 @@ function main() {
     let maxUsers = 0;
     let maxMessages = 0;
     let totalTopicMembers = 0;
+    let totalTimeBetweenMessages = 0;
     let count = 0;
     parsers.forEach((p) => {
       let stats = new Stats(p.getMessages());
@@ -101,11 +102,13 @@ function main() {
         maxMessages = num;
       }
       totalTopicMembers += stats.getAverageTopicMembers();
+      totalTimeBetweenMessages += stats.getAverageTimeBetweenMessagesInChannel();
       count += 1;
     });
     console.log("\t Max users in a day: " + maxUsers);
     console.log("\t Max messages in a day: " + maxMessages);
     console.log("\t Average daily members per topic: " + (1.0 * totalTopicMembers / count));
+    console.log("\t Average time between messages in channel (ms): " + (1.0 * totalTimeBetweenMessages / count));
     return Promise.resolve();
   }).then(() => {
     /** Global Stats **/

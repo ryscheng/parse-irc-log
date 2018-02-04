@@ -17,6 +17,17 @@ class Stats {
   /*********************
    * PRIVATE
    *********************/
+  _sortMessages() {
+    function compare(a, b) {
+      if (a.date < b.date) {
+        return -1;
+      } else if (a.date > b.date) {
+        return 1;
+      }
+      return 0;
+    }
+    this._messages.sort(compare);
+  }
 
   _addUserToChannel(channel, username) {
     if (!this._data.channels.hasOwnProperty(channel)) {
@@ -117,6 +128,43 @@ class Stats {
     // Channel members
     this._addUserToChannel(msgObj.channel, msgObj.user);
 
+  }
+
+  getAverageTimeBetweenMessagesInChannel() {
+    this._sortMessages();
+    let counter = {
+      "test!!!": { // Channel Name
+        first: new Date(),  // first message time
+        last: new Date(),   // last message time
+        count: 1,           // total messages
+      } 
+    };
+    this._messages.forEach((msg) => {
+      let channel = msg.channel;
+      let time = msg.date.getTime();
+      if (!counter.hasOwnProperty(channel)) {
+        counter[channel] = {
+          first: time,
+          count: 1,
+        };
+      } else {
+        counter[channel].last = time,
+        counter[channel].count++;
+      }
+    });
+    let top = 0;
+    let bot = 0;
+    for (let k in counter) {
+      let obj = counter[k];
+      if (obj.hasOwnProperty("last") && obj.hasOwnProperty("first") && obj.hasOwnProperty("count")) {
+        top += 1.0*(obj.last - obj.first)/obj.count;
+        bot++;
+      }
+    }
+    console.log("!!!" + top/bot);
+    console.log(top);
+    console.log(bot);
+    return top/bot;
   }
 
 }
