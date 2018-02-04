@@ -157,13 +157,12 @@ class Stats {
     for (let k in counter) {
       let obj = counter[k];
       if (obj.hasOwnProperty("last") && obj.hasOwnProperty("first") && obj.hasOwnProperty("count")) {
-        top += 1.0*(obj.last - obj.first)/obj.count;
+        top += (obj.last - obj.first);
+        bot += obj.count;
         bot++;
       }
     }
-    console.log("!!!" + top/bot);
-    console.log(top);
-    console.log(bot);
+    top = top / 1000.0 // ms => s
     return top/bot;
   }
 

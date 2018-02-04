@@ -108,7 +108,7 @@ function main() {
     console.log("\t Max users in a day: " + maxUsers);
     console.log("\t Max messages in a day: " + maxMessages);
     console.log("\t Average daily members per topic: " + (1.0 * totalTopicMembers / count));
-    console.log("\t Average time between messages in channel (ms): " + (1.0 * totalTimeBetweenMessages / count));
+    console.log("\t Average time between messages in channel (s): " + (1.0 * totalTimeBetweenMessages / count));
     return Promise.resolve();
   }).then(() => {
     /** Global Stats **/
