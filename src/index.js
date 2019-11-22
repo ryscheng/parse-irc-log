@@ -51,8 +51,8 @@ function main() {
   for (let month = 1; month <= 12; month++) {
     for (let day = 1; day <= 31; day++) {
   **/
-  for (let month = 1; month <= 1; month++) {
-    for (let day = 1; day <= 1; day++) {
+  for (let month = 1; month <= 2; month++) {
+    for (let day = 1; day <= 31; day++) {
       let dir = path.join(parent, doubleDigitStr(month), doubleDigitStr(day));
       let datePrefix = "2016-" + doubleDigitStr(month) + "-" + doubleDigitStr(day) + " ";
       let p = new ParseIRC(dir, datePrefix);
@@ -159,6 +159,8 @@ function main() {
       let writeBW = 1.08 * writesPerUser; //KB
       let readBW = 20.46 * readsPerUser; //KB bucketDepth=4
       //let readBW = 4.16 * (total.dummyRead + total.realRead); //KB
+      let writeAvgQueueLength = (1.0*total.writeQueueLength)/total.realWrite;
+      let readAvgQueueLength = (1.0*total.readQueueLength)/total.realRead;
       let averageLatency = (total.latency / (total.realRead * 1000.0)); // seconds
       console.log("Percentage Real Write");
       console.log(percentWrite + "%"); 
@@ -172,6 +174,10 @@ function main() {
       console.log(writeBW);
       console.log("Average Read B/W per User (KB/day)");
       console.log(readBW);
+      console.log("Average Write Queue Length");
+      console.log(writeAvgQueueLength);
+      console.log("Average Read Queue Length");
+      console.log(readAvgQueueLength);
       console.log("Average E2E Latency (s)");
       console.log(averageLatency);
       outputStr += (readPeriod / 1000);               // (s)

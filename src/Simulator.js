@@ -73,6 +73,8 @@ class Simulator {
       realWrite: 0,
       dummyRead: 0,
       realRead: 0,
+      writeQueueLength: 0,
+      readQueueLength: 0,
       users: this._stats.countTotalUsers(),
     }
     messages.forEach((msg) => {
@@ -90,11 +92,13 @@ class Simulator {
       writeUsers[u].finish(lastTime);
       total.dummyWrite += writeUsers[u].getDummy();
       total.realWrite += writeUsers[u].getReal();
+      total.writeQueueLength += writeUsers[u].getQueueLengthTotal();
     });
     Object.keys(readUsers).forEach((u) => {
       readUsers[u].finish(lastTime);
       total.dummyRead += readUsers[u].getDummy();
       total.realRead += readUsers[u].getReal();
+      total.readQueueLength += readUsers[u].getQueueLengthTotal();
     });
 
     return total;
