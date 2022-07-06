@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/ryscheng/parse-irc-log#readme",
   "dependencies": {
-    "moment": "^2.19.3",
+    "moment": "^2.29.4",
     "progress": "^2.0.0",
     "q": "^1.5.1",
     "random": "^2.1.1"
